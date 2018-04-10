@@ -53,6 +53,9 @@ int             readi(struct inode*, char*, uint, uint);
 void            stati(struct inode*, struct stat*);
 int             writei(struct inode*, char*, uint, uint);
 
+struct inode* create(char *path, short type, short major, short minor);
+int isdirempty(struct inode *dp);
+
 // ide.c
 void            ideinit(void);
 void            ideintr(void);

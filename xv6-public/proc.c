@@ -523,7 +523,8 @@ procdump(void)
       state = states[p->state];
     else
       state = "???";
-    cprintf("%d %s %s", p->pid, state, p->name);
+    //in between state and name, list allocated pages, paged out, page faults
+    cprintf("%d %s %d %d %d %s", p->pid, state, p->pages_allocated, p->paged_out, p->page_faults, p->total_page_outs, p->name);
     if(p->state == SLEEPING){
       getcallerpcs((uint*)p->context->ebp+2, pc);
       for(i=0; i<10 && pc[i] != 0; i++)

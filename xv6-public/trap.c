@@ -8,6 +8,10 @@
 #include "traps.h"
 #include "spinlock.h"
 
+#ifndef VERBOSE_PRINT
+#define VERBOSE_PRINT 0
+#endif /*end VERBOSE_PRINT */
+
 // Interrupt descriptor table (shared by all CPUs).
 struct gatedesc idt[256];
 extern uint vectors[];  // in vectors.S: array of 256 entry pointers
@@ -38,16 +42,28 @@ trap(struct trapframe *tf)
 {
   if(tf->trapno == T_SYSCALL){
     if(myproc()->killed)
+      if(VERBOSE_PRINT){
+	procdump();
+      }
       exit();
     myproc()->tf = tf;
     syscall();
     if(myproc()->killed)
+      if(VERBOSE_PRINT){
+	procdump();
+      }
       exit();
     return;
   }
 
   switch(tf->trapno){
   case T_IRQ0 + IRQ_TIMER:
+    if(myproc() && myproc()->state == RUNNING){
+	
+	//record PTEs with PTE_A set
+	//update LRU data structure
+	//reset PTE_A for all PTEs
+    }
     if(cpuid() == 0){
       acquire(&tickslock);
       ticks++;
@@ -77,7 +93,45 @@ trap(struct trapframe *tf)
             cpuid(), tf->cs, tf->eip);
     lapiceoi();
     break;
-
+  case T_PGFLT:
+    my_proc()->page_faults++;
+    if(myproc()->total_pages > MAX_TOTAL_PAGES){
+      myproc()->killed = 1;
+    } else {
+      if(*pte & PTE_PG){
+	myproc()->total_pages++;
+      }
+      if(myproc()->total_physical_pages <  MAX_PSYC_PAGES){
+	myproc()->total_physical_pages++;
+        char *frame = kalloc()
+	mappages(myproc()->pgdir, rcr2(), PGSIZE, V2P(frame), PTE_W|PTE_U); 
+	memset(frame, 0, PGSIZE);
+	//add to FIFO
+      } else {
+	char *pte = selectVictimPage();
+	//GET PLACE ON FILE
+	//uint placeOnFile = SOMETHING;
+        my_proc()->paged_out++;
+	my_proc()->total_paged_out++;
+	
+	writeToSwapFile(myproc(), page, placeOnFile, PGSIZE);
+	PTE_P -> 0;
+        *pte &= -PTE_P;
+	PTE_PG -> 1;
+	*pte |= PTE_PG;
+	mappages(myproc()->pgdir, rcr2(), PGSIZE, PTE_ADDR(*pte), PTE_W|PTE_U);
+        //add pte to FIFO
+      }
+      if(*pte == rcr()){
+	myproc()->paged_out--;
+	//GET PLACE ON FILE
+	//placeOnFile = SOMETHING;
+	readFromSwapFile(myproc(), *pte, placeOnFile, PGSIZE);
+      } else {
+	memset(*pte, 0, PGSIZE);	
+      }
+    }
+    break;
   //PAGEBREAK: 13
   default:
     if(myproc() == 0 || (tf->cs&3) == 0){
@@ -98,6 +152,9 @@ trap(struct trapframe *tf)
   // (If it is still executing in the kernel, let it keep running
   // until it gets to the regular system call return.)
   if(myproc() && myproc()->killed && (tf->cs&3) == DPL_USER)
+    if(VERBOSE_PRINT){
+	procdump();	
+    }
     exit();
 
   // Force process to give up CPU on clock tick.
@@ -108,5 +165,38 @@ trap(struct trapframe *tf)
 
   // Check if the process has been killed since we yielded
   if(myproc() && myproc()->killed && (tf->cs&3) == DPL_USER)
+    if(VERBOSE_PRINT){
+	procdump();
+    }
     exit();
+}
+
+char*
+selectVictimPage(){
+  char *pte;
+  if(SELECTION == "FIFO"){
+	//GONNA DO FIFO AS A LINKED LIST I GUESS
+	int pte_target = fifo_head;
+	fifo_head = fifo_head->next;
+	//iterate through ptes looking for target
+	return pte;
+  }else if(SELECTION == "RAND"){
+	//do RAND shit
+	int rand_num = rand_generator(myproc()->total_pages - myproc()->paged_out);
+	//get the rand_numth pte
+	return pte
+  }else if(SELECTION == "LRU"){
+	//LRU IS A STACK, RIGHT?
+	int pte_target = myproc()->lru[myproc()->lru_bottom];
+	//find that pte
+	return pte;
+  }
+}
+static unsigned long X = 1;
+
+int rand_generator(int max){
+	unsigned long rand1 = 1103515245;
+	unsigned long rand2 = 12345;
+	X = a * X + c;
+	return ((unsigned int)(next/65536) % 32768) % max + 1);
 }

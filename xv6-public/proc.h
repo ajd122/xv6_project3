@@ -59,6 +59,7 @@ struct proc {
 <<<<<<< HEAD
   uint page_location[30];       // line of the page in the file
 =======
+  int page_location[30];       // line of the page in the file
 >>>>>>> e0fde562f06c2f0d4d53cfc3fd5839fe57b048f8
 };
 

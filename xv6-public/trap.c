@@ -28,6 +28,7 @@ uint ticks;
 int MAX_TOTAL_PAGES = 30;
 int MAX_PSYC_PAGES = 15;
 //uint PGSIZE = 4096;
+<<<<<<< HEAD
 uint placeOnFile;
 
 //int mappages(pde_t *pgdir, void *va, uint size, uint pa, int perm);
@@ -36,6 +37,10 @@ char* selectVictimPage();
 //void readFromSwapFile(struct proc * p, char* pte, uint placeOnFile, uint size);
 int strcmp(const char *s1, const char *s2);
 
+=======
+
+static int mappages(pde_t *pgdir, void *va, uint size, uint pa, int perm);
+>>>>>>> e0fde562f06c2f0d4d53cfc3fd5839fe57b048f8
 
 void
 tvinit(void)
@@ -114,7 +119,10 @@ trap(struct trapframe *tf)
     break;
   case T_PGFLT:
     myproc()->page_faults++;
+<<<<<<< HEAD
     char *pte = selectVictimPage();
+=======
+>>>>>>> e0fde562f06c2f0d4d53cfc3fd5839fe57b048f8
     if(myproc()->total_pages > MAX_TOTAL_PAGES){
       myproc()->killed = 1;
     } else {
@@ -124,7 +132,11 @@ trap(struct trapframe *tf)
       if(myproc()->total_physical_pages <  MAX_PSYC_PAGES){
 	myproc()->total_physical_pages++;
         char *frame = kalloc();
+<<<<<<< HEAD
 	mappages(myproc()->pgdir, (char*) rcr2(), PGSIZE, V2P(frame), PTE_W|PTE_U); 
+=======
+	mappages(myproc()->pgdir, rcr2(), PGSIZE, V2P(frame), PTE_W|PTE_U); 
+>>>>>>> e0fde562f06c2f0d4d53cfc3fd5839fe57b048f8
 	memset(frame, 0, PGSIZE);
 	//add to FIFO
       } else {

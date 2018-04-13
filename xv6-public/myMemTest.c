@@ -1,5 +1,6 @@
 #include<stdio.h>
 #include<stdlib.h>
+#include <sys/time.h>
 
 int main()
 {
@@ -14,10 +15,18 @@ int main()
 
         //wait one second
         delay(1000);
+		
+		//begin timer for purpose of measuring performance difference
+		struct timeval stop, start;
+		gettimeofday(&start, NULL);
 
-	//allocate a full page for the process, and return the address of where the
-        //memory space begins
+		//allocate a full page for the process, and return the address of where the memory space begins
         str = (char *) malloc(4096)
-        printf("Address = %u\n", str);
+		
+		//close timer
+		gettimeofday(&stop, NULL);
+		
+		
+        printf("Address = %u\n took %lu seconds\n", str, stop.tv_usec - start.tv_usec);
     }
 }

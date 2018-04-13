@@ -56,11 +56,7 @@ struct proc {
   int total_page_outs;         // number of pages swapped out from memory
   int total_physical_pages;    // total number of physical pages a process has
   int total_pages;             // total number of pages a file has
-<<<<<<< HEAD
   uint page_location[30];       // line of the page in the file
-=======
-  int page_location[30];       // line of the page in the file
->>>>>>> e0fde562f06c2f0d4d53cfc3fd5839fe57b048f8
 };
 
 // Process memory is laid out contiguously, low addresses first:

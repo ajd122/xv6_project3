@@ -17,6 +17,11 @@ struct gatedesc idt[256];
 extern uint vectors[];  // in vectors.S: array of 256 entry pointers
 struct spinlock tickslock;
 uint ticks;
+int MAX_TOTAL_PAGES = 30;
+int MAX_PSYC_PAGES = 15;
+//uint PGSIZE = 4096;
+
+static int mappages(pde_t *pgdir, void *va, uint size, uint pa, int perm);
 
 void
 tvinit(void)
@@ -94,16 +99,16 @@ trap(struct trapframe *tf)
     lapiceoi();
     break;
   case T_PGFLT:
-    my_proc()->page_faults++;
+    myproc()->page_faults++;
     if(myproc()->total_pages > MAX_TOTAL_PAGES){
       myproc()->killed = 1;
     } else {
-      if(*pte & PTE_PG){
-	myproc()->total_pages++;
-      }
+//      if(*pte & PTE_PG){
+//	myproc()->total_pages++;
+//      }
       if(myproc()->total_physical_pages <  MAX_PSYC_PAGES){
 	myproc()->total_physical_pages++;
-        char *frame = kalloc()
+        char *frame = kalloc();
 	mappages(myproc()->pgdir, rcr2(), PGSIZE, V2P(frame), PTE_W|PTE_U); 
 	memset(frame, 0, PGSIZE);
 	//add to FIFO

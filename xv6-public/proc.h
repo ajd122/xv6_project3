@@ -35,6 +35,7 @@ struct context {
 enum procstate { UNUSED, EMBRYO, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };
 
 // Per-process state
+// Per-process state
 struct proc {
   uint sz;                     // Size of process memory (bytes)
   pde_t* pgdir;                // Page table
@@ -49,13 +50,13 @@ struct proc {
   struct file *ofile[NOFILE];  // Open files
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
-  int pages_allocated;
-  int paged_out;
-  int page_faults;
-  int total_page_outs;
-  int total_physical_pages;
-  int total_pages;
-  
+  int pages_allocated;         //
+  int paged_out;               // 
+  int page_faults;             // number of page faults occurred
+  int total_page_outs;         // number of pages swapped out from memory
+  int total_physical_pages;    // total number of physical pages a process has
+  int total_pages;             // total number of pages a file has
+  int page_location[30];       // line of the page in the file
 };
 
 // Process memory is laid out contiguously, low addresses first:
